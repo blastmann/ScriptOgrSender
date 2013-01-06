@@ -1,0 +1,6 @@
+[
+	{
+		"keys": ["shift+alt+p"],
+		"command": "post_scr"
+	}
+]

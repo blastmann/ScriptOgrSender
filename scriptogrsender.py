@@ -8,11 +8,13 @@ import sublime, sublime_plugin
 
 app_key = ''
 user_id = ''
-url = "http://scriptogr.am/api/article/post/"
+posturl = 'http://scriptogr.am/api/article/post/'
+delurl = 'http://scriptogr.am/api/article/delete/'
+proxy_server = ''
 proxy = urllib2.ProxyHandler(proxies = {'http' : ''})
 data = {'app_key':app_key, 'user_id': user_id, 'name':'foo.md', 'text':'foo'}  
 
-class KeyCommand(sublime_plugin.TextCommand):
+class PostScrCommand(sublime_plugin.TextCommand):
 	def post(url, data):  
 	    # data = urllib.urlencode(data)
 	    opener = urllib2.build_opener(proxy)
@@ -23,3 +25,8 @@ class KeyCommand(sublime_plugin.TextCommand):
 		io = StringIO.StringIO(post(url, data))
 		rep = json.load(io)
 		print rep
+
+class DelPostScrCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		print 'deleted'
+		

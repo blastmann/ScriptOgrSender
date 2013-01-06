@@ -1,0 +1,4 @@
+[
+    { "command": "post_scr", "caption": "Post to ScriptOgr.am" },
+    { "command": "del_post_scr", "caption": "Delete this post on ScriptOgr.am" }
+]
