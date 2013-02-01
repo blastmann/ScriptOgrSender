@@ -9,11 +9,13 @@ import urllib2
 import threading
 import re
 
-app_key = ''
-base_url = 'http://scriptogr.am/api/article/'
+app_key      = ''
+user_id      = ''
+proxy_server = ''
+base_url     = 'http://scriptogr.am/api/article/'
 
 # Operations definitions
-base_opr = [{'app_key': app_key, 'user_id': user_id}]
+base_opr = {'app_key': app_key, 'user_id': user_id}
 # do_upload = {'app_key': app_key, 'user_id': user_id, 'name': 'foo.md', 'text': 'foo'}
 # do_delete = {'app_key': app_key, 'user_id': user_id, 'filename': 'foomd.md'}
 
@@ -23,21 +25,23 @@ def get_settings():
     settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
     user_id = settings.get('user_id')
     proxy_server = settings.get('proxy_server')
+    base_opr['user_id'] = user_id
 
 def init_settings():
     get_settings()
     sublime.load_settings('ScriptOgrSender.sublime-settings').add_on_change('get_settings', get_settings)
 
-init_settings()
 
 # Debug
 class PrintInfoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
+        if user_id == '':
+            init_settings()
         print user_id
         print proxy_server
-        opr = json.loads(base_opr)
-        opr.append('name', 'foo')
-        print opr
+        print base_opr
+        base_opr['name'] = 'foo'
+        print base_opr
         return
 
 # Api Call

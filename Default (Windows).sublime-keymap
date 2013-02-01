@@ -2,5 +2,9 @@
 	{
 		"keys": ["shift+alt+p"],
 		"command": "post_scr"
-	}
+	},
+    {
+        "keys": ["shift+alt+d"],
+        "command": "print_info"
+    }
 ]
