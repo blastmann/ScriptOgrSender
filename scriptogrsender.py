@@ -15,7 +15,7 @@ proxy_server = ''
 base_url     = 'http://scriptogr.am/api/article/'
 
 # Operations definitions
-base_opr = {'app_key': app_key, 'user_id': user_id}
+# base_opr = {'app_key': app_key, 'user_id': user_id}
 # do_upload = {'app_key': app_key, 'user_id': user_id, 'name': 'foo.md', 'text': 'foo'}
 # do_delete = {'app_key': app_key, 'user_id': user_id, 'filename': 'foomd.md'}
 
@@ -25,7 +25,7 @@ def get_settings():
     settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
     user_id = settings.get('user_id')
     proxy_server = settings.get('proxy_server')
-    base_opr['user_id'] = user_id
+    # base_opr['user_id'] = user_id
 
 def init_settings():
     get_settings()
@@ -39,27 +39,47 @@ class PrintInfoCommand(sublime_plugin.TextCommand):
             init_settings()
         print user_id
         print proxy_server
-        print base_opr
+        base_opr = {'app_key': app_key, 'user_id': user_id}
         base_opr['name'] = 'foo'
         print base_opr
+        filename = os.path.basename(self.view.file_name())
+        upload_opr = base_opr
+        upload_opr['name'] = filename
+        print upload_opr
+        print os.path.basename(self.view.file_name())
         return
 
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
     """docstring for ScriptOgrApiCall"""
-    def __init__(self, operation, timeout):
+    def __init__(self, filedata, operation, timeout):
         self.original = operation
         self.timeout = timeout
         self.result = None
         threading.Thread.__init__(self)
 
+    def post(self, method, data):
+        dataenc = urllib.urlencode(data)
+        request = urllib2.Request(base_url + self.original + '/', dataenc)
+        http_file = urllib2.urlopen(request, timeout=self.timeout)
+        self.result = http_file.read()
+
     def run(self):
         try:
-            data = urllib.urlencode(do_upload)
-            request = urllib2.Request(base_url + self.original + '/', data)
-            http_file = urllib2.urlopen(request, timeout=self.timeout)
-            self.result = http_file.read()
-            return
+            if self.operation == 'post':
+                filename = os.path.basename(self.view.file_name())
+                upload_opr = {'app_key': app_key, 'user_id': user_id, 'name': filename}
+                post(self.operation, upload_opr)
+                print self.result
+                return
+
+            elif self.operation == 'delete':
+                filename = os.path.basename(self.view.file_name())
+                delete_opr = {'app_key': app_key, 'user_id': user_id, 'filename': filename}
+                post(self.operation, delete)
+                print self.result
+                return
+
         except (urllib2.HTTPError) as (e):
             err = '%s: HTTP error %s contacting API' % (__name__, str(e.code))
         except (urllib2.URLError) as (e):
@@ -67,19 +87,14 @@ class ScriptOgrApiCall(threading.Thread):
         sublime.error_message(err)
         self.result = False
 
-    # def run(self):
-    #   try:
-    #       data = urllib.urlencode()
-
-    #
 
 # Post
 class PostScrCommand(sublime_plugin.TextCommand):
     def run(self, edit):
+        threads = []
+
+
         return
-        # io = StringIO.StringIO(self.uppost(posturl, do_upload))
-        # rep = json.load(io)
-        # print rep
 
     def handle_threads(self, edit, threads):
         next_threads = []
