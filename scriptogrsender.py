@@ -25,7 +25,6 @@ def get_settings():
     settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
     user_id = settings.get('user_id')
     proxy_server = settings.get('proxy_server')
-    # base_opr['user_id'] = user_id
 
 def init_settings():
     get_settings()
@@ -47,21 +46,27 @@ class PrintInfoCommand(sublime_plugin.TextCommand):
         upload_opr['name'] = filename
         print upload_opr
         print os.path.basename(self.view.file_name())
+        self.opr = 'post'
+        if self.opr == 'post':
+            print self.opr
+        self.view.run_command("select_all")
         return
 
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
     """docstring for ScriptOgrApiCall"""
-    def __init__(self, filedata, operation, timeout):
-        self.original = operation
-        self.timeout = timeout
-        self.result = None
+    def __init__(self, sel, filedata, operation, timeout):
+        self.sel       = sel
+        self.original  = filedata
+        self.operation = operation
+        self.timeout   = timeout
+        self.result    = None
         threading.Thread.__init__(self)
 
     def post(self, method, data):
-        dataenc = urllib.urlencode(data)
-        request = urllib2.Request(base_url + self.original + '/', dataenc)
-        http_file = urllib2.urlopen(request, timeout=self.timeout)
+        dataenc     = urllib.urlencode(data)
+        request     = urllib2.Request(base_url + self.original + '/', dataenc)
+        http_file   = urllib2.urlopen(request, timeout=self.timeout)
         self.result = http_file.read()
 
     def run(self):
@@ -91,20 +96,51 @@ class ScriptOgrApiCall(threading.Thread):
 # Post
 class PostScrCommand(sublime_plugin.TextCommand):
     def run(self, edit):
+        self.view.run_command("select_all")
+        sels = self.view.sel()
         threads = []
 
+        for sel in sels:
+            string = self.view.substr(sel)
+            thread = ScriptOgrApiCall(sel, string, 'post', 10)
+            threads.append(thread)
+            thread.start()
+
+        self.view.sel().clear()
+        self.handle_threads(threads)
 
         return
 
-    def handle_threads(self, edit, threads):
+    def handle_threads(self, threads):
         next_threads = []
         for thread in threads:
             if thread.is_alive():
                 next_threads.append(thread)
             if thread.result == False:
                 continue
-        return
+        threads = next_threads
 
+        if len(threads):
+            before = i % 8
+            after = (7) - before
+            if not after:
+                dir = -1
+            if not before:
+                dir = 1
+            i += dir
+            self.view.set_status('scriptogr operate', 'Preceeding [%s=%s]' % \
+                (' ' * before, ' ' * after))
+
+            # sublime.set_timeout(lambda: self.handle_threads(edit, threads,
+            #     braces, offset, i, dir), 100)
+            return
+
+        # self.view.end_edit(edit)
+
+        # self.view.erase_status('prefixr')
+        # selections = len(self.view.sel())
+        # sublime.status_message('Prefixr successfully run on %s selection%s' %
+        #     (selections, '' if selections == 1 else 's'))
 
 # Delete
 class DelPostScrCommand(sublime_plugin.TextCommand):
