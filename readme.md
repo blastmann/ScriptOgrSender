@@ -2,7 +2,10 @@
 
 This is just a simple plug-in for Sublime Text 2. In order to post our markdown posts to our blog easily, we just don't want to leave ST2 and just submit the post directly.
 
-All the functions are not done yet, I just need a homepage for this plug-in in order to test this stuff.
+### 2013-02-02 Update
+Release version 0.1, basically support the ScriptOgr.am api.
+
+### Remember: I didn't add my app key into this plugin. Without app key, the api will not work. I still can't find the way to encrypt my key in the source code. When I find that, I will update the plugin soon.
 
 ## Installation
 ### Manual
