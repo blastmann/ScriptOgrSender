@@ -1,5 +1,6 @@
 /* ScriptOgr default setting */
 {
     "proxy_server" : "",
-    "user_id" : ""
+    "user_id" : "",
+    "base_url": "http://scriptogr.am/api/article/"
 }

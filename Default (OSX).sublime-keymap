@@ -1,6 +1,10 @@
 [
-	{
-		"keys": ["shift+alt+p"],
-		"command": "post_scr"
-	}
+    {
+        "keys": ["shift+alt+p"],
+        "command": "post_scr"
+    },
+    {
+        "keys": ["shift+alt+d"],
+        "command": "del_post_scr"
+    }
 ]

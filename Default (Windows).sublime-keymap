@@ -5,6 +5,6 @@
 	},
     {
         "keys": ["shift+alt+d"],
-        "command": "print_info"
+        "command": "del_post_scr"
     }
 ]
