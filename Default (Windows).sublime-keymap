@@ -1,10 +1,18 @@
 [
 	{
 		"keys": ["shift+alt+p"],
-		"command": "post_scr"
+		"command": "post_scr",
+        "context":
+            [
+                { "key": "selector", "operator": "equal", "operand": "text.html.markdown" }
+            ]
 	},
     {
         "keys": ["shift+alt+d"],
-        "command": "del_post_scr"
+        "command": "del_post_scr",
+        "context":
+            [
+                { "key": "selector", "operator": "equal", "operand": "text.html.markdown" }
+            ]
     }
 ]

@@ -8,18 +8,6 @@ import threading
 
 app_key = ''
 
-# Load settings
-def get_settings():
-    global user_id, proxy_server, baseurl
-    settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
-    user_id = settings.get('user_id')
-    proxy_server = settings.get('proxy_server')
-    baseurl = settings.get('base_url')
-
-def init_settings():
-    get_settings()
-    sublime.load_settings('ScriptOgrSender.sublime-settings').add_on_change('get_settings', get_settings)
-
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
     """docstring for ScriptOgrApiCall"""
@@ -73,11 +61,54 @@ class ScriptOgrApiCall(threading.Thread):
         self.result = False
 
 
-# Post
-class PostScrCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        init_settings()
+# Base
+class CommandBase(sublime_plugin.TextCommand):
+    """docstring for CommandBase"""
+    def __init__(self, view):
+        # Inherit from class TextCommand
+        sublime_plugin.TextCommand.__init__(self, view)
+        self.user_id = None
+        self.proxy_server = None
+        self.base_url = None
+        self.get_settings()
 
+    def get_settings(self):
+        settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
+        self.user_id = settings.get('user_id')
+        self.proxy_server = settings.get('proxy_server')
+        self.base_url = settings.get('base_url')
+
+    def handle_threads(self, threads, i=0, dir=0):
+        next_threads = []
+        for thread in threads:
+            if thread.is_alive():
+                next_threads.append(thread)
+            else:
+                print '\nScriptOgr.am api response: ' + thread.get_response() + '\n'
+                sublime.status_message('ScriptOgr.am api response: ' + thread.get_response())
+            if thread.result == False:
+                continue
+        threads = next_threads
+
+        if len(threads):
+            before = i % 8
+            after = (7) - before
+            if not after:
+                dir = -1
+            if not before:
+                dir = 1
+            i += dir
+            self.view.set_status('operating', 'ScriptOgrSender is opearting [%s=%s]' % \
+                (' ' * before, ' ' * after))
+
+            sublime.set_timeout(lambda: self.handle_threads(threads, i, dir), 100)
+            return
+        self.view.erase_status('operating')
+
+# Post v0.2
+class PostScrCommand(CommandBase):
+    """docstring for PostScrCommand"""
+    def run (self, edit):
         # Get filename
         basename = os.path.basename(self.view.file_name())
         f, ext = os.path.splitext(basename)
@@ -96,38 +127,9 @@ class PostScrCommand(sublime_plugin.TextCommand):
         self.handle_threads(threads)
         return
 
-    def handle_threads(self, threads, i=0, dir=0):
-        next_threads = []
-        for thread in threads:
-            if thread.is_alive():
-                next_threads.append(thread)
-            else:
-                print '\nScriptOgr.am api response: ' + thread.get_response() + '\n'
-                sublime.status_message('ScriptOgr.am api response: ' + thread.get_response())
-            if thread.result == False:
-                continue
-        threads = next_threads
-
-        if len(threads):
-            before = i % 8
-            after = (7) - before
-            if not after:
-                dir = -1
-            if not before:
-                dir = 1
-            i += dir
-            self.view.set_status('postopr', 'Posting page [%s=%s]' % \
-                (' ' * before, ' ' * after))
-
-            sublime.set_timeout(lambda: self.handle_threads(threads, i, dir), 100)
-            return
-        self.view.erase_status('postopr')
-
-# Delete
+# Delete v0.2
 class DelPostScrCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        init_settings()
-
         # Get filename
         basename = os.path.basename(self.view.file_name())
         f, ext = os.path.splitext(basename)
@@ -139,30 +141,3 @@ class DelPostScrCommand(sublime_plugin.TextCommand):
 
         self.handle_threads(threads)
         return
-
-    def handle_threads(self, threads, i=0, dir=0):
-        next_threads = []
-        for thread in threads:
-            if thread.is_alive():
-                next_threads.append(thread)
-            else:
-                print '\nScriptOgr.am api response: ' + thread.get_response() + '\n'
-                sublime.status_message('ScriptOgr.am api response: ' + thread.get_response())
-            if thread.result == False:
-                continue
-        threads = next_threads
-
-        if len(threads):
-            before = i % 8
-            after = (7) - before
-            if not after:
-                dir = -1
-            if not before:
-                dir = 1
-            i += dir
-            self.view.set_status('postopr', 'Posting page [%s=%s]' % \
-                (' ' * before, ' ' * after))
-
-            sublime.set_timeout(lambda: self.handle_threads(threads, i, dir), 100)
-            return
-        self.view.erase_status('postopr')
