@@ -68,7 +68,7 @@ class ScriptOgrApiCall(threading.Thread):
         return self.response
 
 # CommandBase class
-class CommandBase(sublime_plugin.TextCommand):
+class ScriptOgrCommandBase(sublime_plugin.TextCommand):
     """docstring for CommandBase"""
     def __init__(self, view):
         # Inherit from class TextCommand
@@ -114,7 +114,7 @@ class CommandBase(sublime_plugin.TextCommand):
         self.view.erase_status('operating')
 
 # Post v0.2
-class PostScrCommand(CommandBase):
+class PostScrCommand(ScriptOgrCommandBase):
     """docstring for PostScrCommand"""
     def runCommand(self, edit, filename):
         # Get article contents
@@ -136,7 +136,7 @@ class PostScrCommand(CommandBase):
         return
 
 # Delete v0.2
-class DelPostScrCommand(CommandBase):
+class DelPostScrCommand(ScriptOgrCommandBase):
     def runCommand(self, edit, filename):
         # Start ScriptOgr.am api call in a thread
         threads = []
