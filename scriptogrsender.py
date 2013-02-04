@@ -11,24 +11,28 @@ app_key = ''
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
     """docstring for ScriptOgrApiCall"""
-    def __init__(self, filename, filedata, operation, timeout):
+    def __init__(self, filename, filedata, operation, userid, proxy, timeout):
         self.filename  = filename
         self.filedata  = filedata
         self.operation = operation
         self.timeout   = timeout
+        self.userid    = userid
+        self.proxy     = proxy
         self.response  = None
         self.result    = None
         threading.Thread.__init__(self)
 
+    # Post our data
     def post(self, method, data):
         dataenc     = urllib.urlencode(data)
-        if proxy_server != '':
-            request = urllib2.build_opener(proxy_server)
+        if self.proxy != '':
+            request = urllib2.build_opener(self.proxy)
         else:
             request = urllib2.build_opener()
         http_file   = request.open(baseurl + self.operation + '/', dataenc, timeout=self.timeout)
         self.response = http_file.read()
 
+    # Parse the api response
     def parse_response(self):
         response = json.loads(self.response)
         if response['status'] == 'success':
@@ -45,9 +49,9 @@ class ScriptOgrApiCall(threading.Thread):
     def run(self):
         try:
             if self.operation == 'post':
-                opr = {'app_key': app_key, 'user_id': user_id, 'name': self.filename, 'text': self.filedata}
+                opr = {'app_key': app_key, 'user_id': self.userid, 'name': self.filename, 'text': self.filedata}
             elif self.operation == 'delete':
-                opr = {'app_key': app_key, 'user_id': user_id, 'filename': self.filename}
+                opr = {'app_key': app_key, 'user_id': self.userid, 'filename': self.filename}
 
             self.post(self.operation, opr)
             self.parse_response()
@@ -60,8 +64,7 @@ class ScriptOgrApiCall(threading.Thread):
         sublime.error_message(err)
         self.result = False
 
-
-# Base
+# CommandBase class
 class CommandBase(sublime_plugin.TextCommand):
     """docstring for CommandBase"""
     def __init__(self, view):
@@ -70,8 +73,8 @@ class CommandBase(sublime_plugin.TextCommand):
         self.user_id = None
         self.proxy_server = None
         self.base_url = None
-        self.get_settings()
 
+    # Get plugin settings
     def get_settings(self):
         settings = sublime.load_settings('ScriptOgrSender.sublime-settings')
         self.user_id = settings.get('user_id')
@@ -109,35 +112,47 @@ class CommandBase(sublime_plugin.TextCommand):
 class PostScrCommand(CommandBase):
     """docstring for PostScrCommand"""
     def run (self, edit):
+        if self.user_id == '':
+            self.get_settings()
+
         # Get filename
         basename = os.path.basename(self.view.file_name())
         f, ext = os.path.splitext(basename)
 
+        # Get article contents
         self.view.run_command("select_all")
         sels = self.view.sel()
-        threads = []
 
+        # Start ScriptOgr.am api call in a thread
+        threads = []
         for sel in sels:
             content = self.view.substr(sel)
-            thread = ScriptOgrApiCall(f, content, 'post', 500)
+            thread = ScriptOgrApiCall(f, content, 'post', self.user_id, self.proxy_server, 500)
             threads.append(thread)
             thread.start()
 
         self.view.sel().clear()
+
+        # Handle threads
         self.handle_threads(threads)
         return
 
 # Delete v0.2
 class DelPostScrCommand(sublime_plugin.TextCommand):
     def run(self, edit):
+        if self.user_id == '':
+            self.get_settings()
+
         # Get filename
         basename = os.path.basename(self.view.file_name())
         f, ext = os.path.splitext(basename)
 
+        # Start ScriptOgr.am api call in a thread
         threads = []
-        thread = ScriptOgrApiCall(f, '', 'delete', 500)
+        thread = ScriptOgrApiCall(f, '', 'delete', self.user_id, self.proxy_server, 500)
         threads.append(thread)
         thread.start()
 
+        # Handle threads
         self.handle_threads(threads)
         return
