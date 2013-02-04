@@ -1,8 +1,8 @@
 <snippet>
     <content><![CDATA[
-Date: #{1:Date}
-Title: #{2:Title}
-Slug: #{3:slug}
+Date: ${1:Date}
+Title: ${2:Title}
+Slug: ${3:slug}
 Tags: ${4:#tags}
 ]]></content>
     <!-- Optional: Set a tabTrigger to define how to trigger the snippet -->

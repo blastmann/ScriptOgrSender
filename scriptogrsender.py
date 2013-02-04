@@ -7,7 +7,6 @@ import urllib2
 import threading
 
 app_key = u''
-base_url = ''
 
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
@@ -125,7 +124,7 @@ class PostScrCommand(CommandBase):
         # Start ScriptOgr.am api call in a thread
         threads = []
         for sel in sels:
-            content = self.view.substr(sel)
+            content = self.view.substr(sel).encode('utf8')
             thread = ScriptOgrApiCall(filename, content, 'post', self.user_id, self.proxy_server, 500)
             threads.append(thread)
             thread.start()
