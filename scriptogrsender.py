@@ -6,7 +6,10 @@ import urllib
 import urllib2
 import threading
 
-app_key = u''
+# ScriptOgr.am app key
+# Please don't modify this key and don't use it in other apps.
+# If you want to develop your own app, please apply your own app key
+app_key = u'Zl61hxkhDb14f80dad2938ee022365a68e55d2098d'
 
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
