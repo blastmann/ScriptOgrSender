@@ -14,33 +14,31 @@ app_key = u'Zl61hxkhDb14f80dad2938ee022365a68e55d2098d'
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
     """docstring for ScriptOgrApiCall"""
-    def __init__(self, filename, filedata, operation, user_id, proxy_server, timeout):
+    def __init__(self, action=None):
         threading.Thread.__init__(self)
-        self.filename  = filename
-        self.filedata  = filedata
-        self.operation = operation
-        self.timeout   = timeout
-        self.user_id   = user_id
-        self.proxy     = proxy_server
-        self.response  = None
-        self.result    = None
+        if action is None:
+            self.action = {}
+        else:
+            self.action = action
+        self.response = None
+        self.result = None
 
     def run(self):
         try:
-            opr = {'app_key': app_key, 'user_id': self.user_id}
-            if self.operation == 'post':
-                opr['name'] = self.filename
-                opr['text'] = self.filedata
-            elif self.operation == 'delete':
-                opr['filename'] = self.filename
+            opr = {'app_key': app_key, 'user_id': self.action['user_id']}
+            if self.action['operation'] == 'post':
+                opr['name'] = self.action['filename']
+                opr['text'] = self.action['content']
+            elif self.action['operation'] == 'delete':
+                opr['filename'] = self.action['filename']
 
-            self.post(self.operation, opr)
+            self.post(opr)
             self.parse_response()
             return
 
-        except (urllib2.HTTPError) as (e):
+        except urllib2.HTTPError as (e):
             err = '%s: HTTP error %s contacting API' % (__name__, str(e.code))
-        except (urllib2.URLError) as (e):
+        except urllib2.URLError as (e):
             err = '%s: URL error %s contacting API' % (__name__, str(e.code))
         sublime.error_message(err)
         self.result = False
@@ -48,8 +46,8 @@ class ScriptOgrApiCall(threading.Thread):
     # Post our data
     def post(self, method, data):
         dataenc= urllib.urlencode(data)
-        if self.proxy != '':
-            proxy = urllib2.ProxyHandler(proxies = {'http' : self.proxy})
+        if self.action['proxy'] != '':
+            proxy = {'http': self.action['proxy']}
             request = urllib2.build_opener(proxy)
         else:
             request = urllib2.build_opener()
@@ -60,9 +58,9 @@ class ScriptOgrApiCall(threading.Thread):
     def parse_response(self):
         response = json.loads(self.response)
         if response['status'] == 'success':
-            if self.operation == 'post':
+            if self.action['operation'] == 'post':
                 self.response = 'Successfully post your article'
-            elif self.operation == 'delete':
+            elif self.action['operation'] == 'delete':
                 self.response = 'Successfully delete your article'
         elif response['status'] == 'failed':
             self.response = response['reason']
@@ -89,7 +87,7 @@ class ScriptOgrCommandBase(sublime_plugin.TextCommand):
         f, ext = os.path.splitext(basename)
         self.runCommand(edit, f)
 
-    def handle_threads(self, threads, i=0, dir=0):
+    def handle_threads(self, threads, i=0, indicator=0):
         next_threads = []
         for thread in threads:
             if thread.is_alive():
@@ -97,26 +95,24 @@ class ScriptOgrCommandBase(sublime_plugin.TextCommand):
             else:
                 print '\nScriptOgr.am api response: ' + thread.get_response() + '\n'
                 sublime.status_message('ScriptOgr.am api response: ' + thread.get_response())
-            if thread.result == False:
+            if not thread.result:
                 continue
         threads = next_threads
 
         if len(threads):
             before = i % 8
-            after = (7) - before
+            after = 7 - before
             if not after:
-                dir = -1
+                indicator = -1
             if not before:
-                dir = 1
-            i += dir
-            self.view.set_status('operating', 'ScriptOgrSender is opearting [%s=%s]' % \
-                (' ' * before, ' ' * after))
+                indicator = 1
+            i += indicator
+            self.view.set_status('operating', 'ScriptOgrSender is operating [%s=%s]' % (' ' * before, ' ' * after))
 
-            sublime.set_timeout(lambda: self.handle_threads(threads, i, dir), 100)
+            sublime.set_timeout(lambda: self.handle_threads(threads, i, indicator), 100)
             return
         self.view.erase_status('operating')
 
-# Post v0.2
 class PostScrCommand(ScriptOgrCommandBase):
     """docstring for PostScrCommand"""
     def runCommand(self, edit, filename):
@@ -128,7 +124,15 @@ class PostScrCommand(ScriptOgrCommandBase):
         threads = []
         for sel in sels:
             content = self.view.substr(sel).encode('utf8')
-            thread = ScriptOgrApiCall(filename, content, 'post', self.user_id, self.proxy_server, 500)
+            # data package
+            action = {
+                'filename': filename,
+                'content': content,
+                'operation': 'post',
+                'user_id': self.user_id,
+                'proxy': self.proxy_server
+            }
+            thread = ScriptOgrApiCall(action)
             threads.append(thread)
             thread.start()
 
@@ -138,12 +142,18 @@ class PostScrCommand(ScriptOgrCommandBase):
         self.handle_threads(threads)
         return
 
-# Delete v0.2
 class DelPostScrCommand(ScriptOgrCommandBase):
     def runCommand(self, edit, filename):
         # Start ScriptOgr.am api call in a thread
         threads = []
-        thread = ScriptOgrApiCall(filename, '', 'delete', self.user_id, self.proxy_server, 500)
+        # data package
+        action = {
+            'filename': filename,
+            'operation': 'post',
+            'user_id': self.user_id,
+            'proxy': self.proxy_server
+        }
+        thread = ScriptOgrApiCall(action)
         threads.append(thread)
         thread.start()
 
