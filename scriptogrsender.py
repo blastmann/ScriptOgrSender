@@ -44,14 +44,14 @@ class ScriptOgrApiCall(threading.Thread):
         self.result = False
 
     # Post our data
-    def post(self, method, data):
+    def post(self, data):
         dataenc= urllib.urlencode(data)
         if self.action['proxy'] != '':
             proxy = {'http': self.action['proxy']}
             request = urllib2.build_opener(proxy)
         else:
             request = urllib2.build_opener()
-        http_file = request.open(base_url + self.operation + '/', dataenc, timeout=self.timeout)
+        http_file = request.open(base_url + self.action['operation'] + '/', dataenc, timeout=self.action['timeout'])
         self.response = http_file.read()
 
     # Parse the api response
@@ -130,7 +130,8 @@ class PostScrCommand(ScriptOgrCommandBase):
                 'content': content,
                 'operation': 'post',
                 'user_id': self.user_id,
-                'proxy': self.proxy_server
+                'proxy': self.proxy_server,
+                'timeout': 500
             }
             thread = ScriptOgrApiCall(action)
             threads.append(thread)
@@ -151,7 +152,8 @@ class DelPostScrCommand(ScriptOgrCommandBase):
             'filename': filename,
             'operation': 'post',
             'user_id': self.user_id,
-            'proxy': self.proxy_server
+            'proxy': self.proxy_server,
+            'timeout': 500
         }
         thread = ScriptOgrApiCall(action)
         threads.append(thread)
