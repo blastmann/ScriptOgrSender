@@ -1,6 +1,12 @@
-## ScriptOgrSender for ST2
+## ScriptOgrSender for ST
 
-This is just a simple plug-in for Sublime Text 2. In order to post our markdown posts to our blog easily, we just don't want to leave ST2 and just submit the post directly.
+This is just a simple plug-in for Sublime Text. In order to post our markdown posts to our blog easily, we just don't want to leave ST and just submit the post directly.
+
+### 2013-06-30 Update
+
+Refactor some codes and add ST3 support.
+
+** If you want to use this in Sublime Text 3, please check out the Python3 branch. **
 
 ### 2013-02-05 Update
 Release version 0.2.2
