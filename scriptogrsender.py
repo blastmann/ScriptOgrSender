@@ -114,7 +114,6 @@ class ScriptOgrCommandBase(sublime_plugin.TextCommand):
             return
         self.view.erase_status('operating')
 
-# Post v0.2
 class PostScrCommand(ScriptOgrCommandBase):
     """docstring for PostScrCommand"""
     def runCommand(self, edit, filename):
@@ -144,7 +143,6 @@ class PostScrCommand(ScriptOgrCommandBase):
         self.handle_threads(threads)
         return
 
-# Delete v0.2
 class DelPostScrCommand(ScriptOgrCommandBase):
     def runCommand(self, edit, filename):
         # Start ScriptOgr.am api call in a thread
