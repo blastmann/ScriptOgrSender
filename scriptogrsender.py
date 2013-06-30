@@ -50,14 +50,12 @@ class ScriptOgrApiCall(threading.Thread):
             request = urllib.request.URLopener(proxy)
         else:
             request = urllib.request.URLopener()
-
-        print(dataenc)
         http_file = request.open(base_url + self.action['operation'] + '/', dataenc)
         self.response = http_file.read()
 
     # Parse the api response
     def parse_response(self):
-        response = json.loads(self.response)
+        response = json.loads(self.response.decode('utf8'))
         if response['status'] == 'success':
             if self.action['operation'] == 'post':
                 self.response = 'Successfully post your article'
