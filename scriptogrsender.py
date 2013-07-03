@@ -47,8 +47,8 @@ class ScriptOgrApiCall(threading.Thread):
     def post(self, data):
         dataenc= urllib.urlencode(data)
         if self.action['proxy'] != '':
-            proxy = {'http': self.action['proxy']}
-            request = urllib2.build_opener(proxy)
+            proxy_handler = urllib2.ProxyHandler({'http': self.action['proxy']})
+            request = urllib2.build_opener(proxy_handler)
         else:
             request = urllib2.build_opener()
         http_file = request.open(base_url + self.action['operation'] + '/', dataenc, timeout=self.action['timeout'])

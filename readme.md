@@ -2,6 +2,10 @@
 
 This is just a simple plug-in for Sublime Text. In order to post our markdown posts to our blog easily, we just don't want to leave ST and just submit the post directly.
 
+### 2013-07-03 Update
+
+Fix proxy error under Sublime Text 2.
+
 ### 2013-06-30 Update
 
 Refactor some codes and add ST3 support.
