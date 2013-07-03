@@ -2,13 +2,13 @@ import sublime
 import sublime_plugin
 import json
 import os
-import urllib, urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.parse, urllib.error
 import threading
 
 # ScriptOgr.am app key
 # Please don't modify this key and don't use it in other apps.
-# If you want to develop your own app, please apply your own app key
-app_key = u'Zl61hxkhDb14f80dad2938ee022365a68e55d2098d'
+# If you want to develop your own app, you'd better apply a new app key in Scriptogr.am for your own.
+app_key = 'Zl61hxkhDb14f80dad2938ee022365a68e55d2098d'
 
 # Api Call
 class ScriptOgrApiCall(threading.Thread):
@@ -46,11 +46,11 @@ class ScriptOgrApiCall(threading.Thread):
     def post(self, data):
         dataenc = urllib.parse.urlencode(data)
         if self.action['proxy'] != '':
-            proxy = {'http': self.action['proxy']}
-            request = urllib.request.URLopener(proxy)
+            proxy_handler = urllib.request.ProxyHandler({'http': self.action['proxy']})
+            request = urllib.request.build_opener(proxy_handler)
         else:
-            request = urllib.request.URLopener()
-        http_file = request.open(base_url + self.action['operation'] + '/', dataenc)
+            request = urllib.request.build_opener()
+        http_file = request.open(base_url + self.action['operation'] + '/', dataenc, timeout=self.action['timeout'])
         self.response = http_file.read()
 
     # Parse the api response
@@ -92,7 +92,7 @@ class ScriptOgrCommandBase(sublime_plugin.TextCommand):
             if thread.is_alive():
                 next_threads.append(thread)
             else:
-                print('\nScriptOgr.am api response: ' + thread.get_response() + '\n')
+                print(('\nScriptOgr.am api response: ' + thread.get_response() + '\n'))
                 sublime.status_message('ScriptOgr.am api response: ' + thread.get_response())
             if not thread.result:
                 continue
@@ -129,7 +129,8 @@ class PostScrCommand(ScriptOgrCommandBase):
                 'content': content,
                 'operation': 'post',
                 'user_id': self.user_id,
-                'proxy': self.proxy_server
+                'proxy': self.proxy_server,
+                'timeout': 500
             }
             thread = ScriptOgrApiCall(action)
             threads.append(thread)
@@ -150,7 +151,8 @@ class DelPostScrCommand(ScriptOgrCommandBase):
             'filename': filename,
             'operation': 'post',
             'user_id': self.user_id,
-            'proxy': self.proxy_server
+            'proxy': self.proxy_server,
+            'timeout': 500
         }
         thread = ScriptOgrApiCall(action)
         threads.append(thread)
