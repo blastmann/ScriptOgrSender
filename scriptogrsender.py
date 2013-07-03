@@ -45,12 +45,13 @@ class ScriptOgrApiCall(threading.Thread):
     # Post our data
     def post(self, data):
         dataenc = urllib.parse.urlencode(data)
+        binary_data = dataenc.encode('utf8')
         if self.action['proxy'] != '':
             proxy_handler = urllib.request.ProxyHandler({'http': self.action['proxy']})
             request = urllib.request.build_opener(proxy_handler)
         else:
             request = urllib.request.build_opener()
-        http_file = request.open(base_url + self.action['operation'] + '/', dataenc, timeout=self.action['timeout'])
+        http_file = request.open(base_url + self.action['operation'] + '/', binary_data, timeout=self.action['timeout'])
         self.response = http_file.read()
 
     # Parse the api response
