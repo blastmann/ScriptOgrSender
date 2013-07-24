@@ -150,7 +150,7 @@ class DelPostScrCommand(ScriptOgrCommandBase):
         # data package
         action = {
             'filename': filename,
-            'operation': 'post',
+            'operation': 'delete',
             'user_id': self.user_id,
             'proxy': self.proxy_server,
             'timeout': 500
